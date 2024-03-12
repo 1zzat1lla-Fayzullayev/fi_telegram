@@ -135,7 +135,7 @@ function Messages({
   };
 
   return (
-    <div className="pt-[100px]">
+    <div className="pt-[30px]">
       <div className="messageBox fixed bottom-0 z-[888] w-full">
         <div className="flex justify-center items-center">
           <div className="fileUploadWrapper absolute left-[10px] top-[50%] transform translate-y-[-50%]"></div>
