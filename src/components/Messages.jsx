@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { format } from "date-fns";
 import Wrapper from "../layout/Wrapper";
 import UserProfile from "../pages/UserProfile";
 import ImageModal from "../shared/modal/ImageModal";
+import Aos from "aos";
 
 function Messages({
   doc,
@@ -27,6 +28,11 @@ function Messages({
   const [selectedUserProfile, setSelectedUserProfile] = useState(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const storage = getStorage();
+  const sendMessageDivRef = useRef(null);
+
+  useEffect(() => {
+    Aos.refresh();
+  }, [messages]);
 
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("timestamp"));
@@ -81,6 +87,14 @@ function Messages({
 
       setNewMessage("");
       setSelectedImage(null);
+      // Scroll to last message
+      if (sendMessageDivRef.current) {
+        sendMessageDivRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -215,12 +229,16 @@ function Messages({
         </button>
       </div>
       <Wrapper>
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
             key={msg.id}
             className={`${msg.data.uid === user?.uid ? "current" : "other"}`}
           >
-            <div className="chat chat-start">
+            <div
+              ref={index === messages.length - 1 ? sendMessageDivRef : null}
+              className="chat chat-start"
+              data-aos="fade-right"
+            >
               <div className="flex justify-center items-start flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-3 relative">
