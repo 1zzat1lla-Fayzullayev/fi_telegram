@@ -1,11 +1,9 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState, useRef } from "react";
-import exitIMG from "../assets/exit.png";
 
 function Navbar() {
   const [userPhoto, setUserPhoto] = useState(null);
   const [displayName, setDisplayName] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const dropdownRef = useRef(null);
@@ -16,18 +14,12 @@ function Navbar() {
       !dropdownRef.current.contains(event.target) &&
       !event.target.classList.contains("menu")
     ) {
-      setShowProfile(false);
       setShowSidebar(false);
     }
   };
 
-  const handleShowProfile = () => {
-    setShowProfile(!showProfile);
-  };
-
   const handleShowSidebar = () => {
     setShowSidebar(!showSidebar);
-    setShowProfile(false);
   };
 
   const handleLogOut = () => {
@@ -114,7 +106,10 @@ function Navbar() {
 
       {/* Left Sidebar */}
       {showSidebar && (
-        <div className="sidebar absolute top-0 left-0 h-[100vh] max-w-[300px] bg-base-200 p-4 flex flex-col z-[999]">
+        <div
+          className="sidebar absolute top-0 left-0 h-[100vh] max-w-[300px] bg-base-200 p-4 flex flex-col z-[999]"
+          ref={dropdownRef}
+        >
           {/* Close button */}
           <button className="close-button" onClick={handleShowSidebar}>
             <span className="X"></span>
@@ -142,13 +137,8 @@ function Navbar() {
               <a href="#">Messages</a>
             </li>
             <li>
-              <a href="#">
-                <img
-                  src={exitIMG}
-                  alt="exit png"
-                  className="flex justify-center items-center w-[50px]"
-                  onClick={handleLogOut}
-                />
+              <a href="#" className="text-red-500" onClick={handleLogOut}>
+                Chiqish
               </a>
             </li>
           </ul>

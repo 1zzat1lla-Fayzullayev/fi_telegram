@@ -3,6 +3,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { format } from "date-fns";
 import Wrapper from "../layout/Wrapper";
 import UserProfile from "../pages/UserProfile";
+import ImageModal from "../shared/modal/ImageModal";
 
 function Messages({
   doc,
@@ -24,6 +25,7 @@ function Messages({
   const [newMessage, setNewMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedUserProfile, setSelectedUserProfile] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const storage = getStorage();
 
   useEffect(() => {
@@ -99,55 +101,84 @@ function Messages({
     setSelectedUserProfile(null);
   };
 
+  const handleOpenImageModal = () => {
+    setIsImageModalOpen(true);
+    document.getElementById("my_modal_3").showModal();
+  };
+
+  const handleCloseImageModal = () => {
+    setIsImageModalOpen(false);
+  };
+
+  const handleImageUpload = async () => {
+    try {
+      const storageRef = ref(storage, `images/${selectedImage.name}`);
+      await uploadBytes(storageRef, selectedImage);
+      const imageUrl = await getDownloadURL(storageRef);
+
+      await addDoc(collection(db, "messages"), {
+        uid: user.uid,
+        photoURL: user.photoURL,
+        displayName: user.displayName,
+        text: newMessage,
+        imageUrl: imageUrl,
+        timestamp: serverTimestamp(),
+      });
+
+      setNewMessage("");
+      setSelectedImage(null);
+
+      handleCloseImageModal();
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+
   return (
     <div className="pt-[100px]">
       <div className="messageBox fixed bottom-0 z-[888] w-full">
         <div className="flex justify-center items-center">
-          <div className="fileUploadWrapper absolute left-[10px] top-[50%] transform translate-y-[-50%]">
-            <label htmlFor="file">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
+          <div className="fileUploadWrapper absolute left-[10px] top-[50%] transform translate-y-[-50%]"></div>
+          {/* Modal */}
+
+          <div onClick={handleOpenImageModal}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 337 337"
+              className="w-[20px] cursor-pointer"
+            >
+              <circle
+                strokeWidth="20"
+                stroke="#6c6c6c"
                 fill="none"
-                viewBox="0 0 337 337"
-              >
-                <circle
-                  strokeWidth="20"
-                  stroke="#6c6c6c"
-                  fill="none"
-                  r="158.5"
-                  cy="168.5"
-                  cx="168.5"
-                ></circle>
-                <path
-                  strokeLinecap="round"
-                  strokeWidth="25"
-                  stroke="#6c6c6c"
-                  d="M167.759 79V259"
-                ></path>
-                <path
-                  strokeLinecap="round"
-                  strokeWidth="25"
-                  stroke="#6c6c6c"
-                  d="M79 167.138H259"
-                ></path>
-              </svg>
-              <span className="tooltip">Add an image</span>
-            </label>
-            <input
-              type="file"
-              id="file"
-              name="file"
-              onChange={handleFileChange}
-            />
-            {selectedImage && (
-              <img
-                src={URL.createObjectURL(selectedImage)}
-                alt="Selected"
-                className="mt-2"
-                style={{ maxWidth: "100%", maxHeight: "200px" }}
-              />
-            )}
+                r="158.5"
+                cy="168.5"
+                cx="168.5"
+              ></circle>
+              <path
+                strokeLinecap="round"
+                strokeWidth="25"
+                stroke="#6c6c6c"
+                d="M167.759 79V259"
+              ></path>
+              <path
+                strokeLinecap="round"
+                strokeWidth="25"
+                stroke="#6c6c6c"
+                d="M79 167.138H259"
+              ></path>
+            </svg>
           </div>
+
+          <ImageModal
+            handleFileChange={handleFileChange}
+            selectedImage={selectedImage}
+            handleImageUpload={handleImageUpload}
+            handleCloseImageModal={handleCloseImageModal}
+          />
+          {/* Modal / */}
+
           <input
             required=""
             placeholder="Message..."
